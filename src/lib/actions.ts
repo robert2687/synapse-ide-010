@@ -1,8 +1,8 @@
 "use server";
 
-import { contextAwareAIAssistant, type ContextAwareAIAssistantInput } from "@/ai/flows/context-aware-ai-assistant";
+import { contextAwareAIAssistant, type ContextAwareAIAssistantInput, type ContextAwareAIAssistantOutput } from "@/ai/flows/context-aware-ai-assistant";
 
-export async function handleAiQuery(instruction: string, fileContents: Record<string, string>, currentFilePath?: string) {
+export async function handleAiQuery(instruction: string, fileContents: Record<string, string>, currentFilePath?: string): Promise<ContextAwareAIAssistantOutput | { error: string }> {
     try {
         const input: ContextAwareAIAssistantInput = {
             instruction,
@@ -13,6 +13,7 @@ export async function handleAiQuery(instruction: string, fileContents: Record<st
         return response;
     } catch (error) {
         console.error("Error in handleAiQuery:", error);
-        throw new Error("Failed to get response from AI assistant.");
+        // Instead of throwing, return a structured error object
+        return { error: "Failed to get response from AI assistant." };
     }
 }

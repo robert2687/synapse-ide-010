@@ -51,17 +51,22 @@ export default function AiAssistant({ vfs, activeFile }: AiAssistantProps) {
       }
 
       const result = await handleAiQuery(input, fileContents, activeFile?.name);
+
+      if ('error' in result) {
+        throw new Error(result.error);
+      }
       
       const assistantMessage: Message = { role: "assistant", content: result.response };
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error("AI Assistant Error:", error);
+      const errorMessage = (error instanceof Error) ? error.message : "Could not get a response from the AI. Please try again.";
       toast({
         variant: "destructive",
         title: "AI Assistant Error",
-        description: "Could not get a response from the AI. Please try again.",
+        description: errorMessage,
       });
-       const assistantMessage: Message = { role: "assistant", content: "Sorry, I encountered an error. Please try again." };
+       const assistantMessage: Message = { role: "assistant", content: `Sorry, I encountered an error: ${errorMessage}` };
        setMessages((prev) => [...prev, assistantMessage]);
     } finally {
       setIsLoading(false);
@@ -89,7 +94,7 @@ export default function AiAssistant({ vfs, activeFile }: AiAssistantProps) {
                   "p-3 rounded-lg max-w-sm shadow",
                   message.role === "user"
                     ? "bg-primary text-primary-foreground"
-                    : "bg-muted"
+                    : "bg-muted text-foreground"
                 )}
               >
                 <pre className="text-sm whitespace-pre-wrap font-sans">{message.content}</pre>
@@ -106,7 +111,7 @@ export default function AiAssistant({ vfs, activeFile }: AiAssistantProps) {
           )}
         </div>
       </ScrollArea>
-      <div className="p-2 border-t bg-card/50">
+      <div className="p-2 border-t bg-background">
         <form onSubmit={handleSubmit} className="flex gap-2">
           <Textarea
             value={input}
