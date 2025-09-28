@@ -1,29 +1,27 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Bar, BarChart, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
+import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import { GitBranch, GitCommit, ArrowUp, ArrowDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 const mockCommits = [
-  {
-    hash: "a1b2c3d",
-    message: "feat: Implement live preview panel",
-    author: "AI Assistant",
-    time: "2 hours ago",
-  },
-  {
-    hash: "e4f5g6h",
-    message: "fix: Editor content not updating",
-    author: "Developer",
-    time: "1 day ago",
-  },
-  {
-    hash: "i7j8k9l",
-    message: "chore: Initial project setup",
-    author: "Developer",
-    time: "2 days ago",
-  },
+  { day: "Mon", commits: 2 },
+  { day: "Tue", commits: 5 },
+  { day: "Wed", commits: 3 },
+  { day: "Thu", commits: 7 },
+  { day: "Fri", commits: 4 },
+  { day: "Sat", commits: 1 },
+  { day: "Sun", commits: 0 },
 ];
+
+const chartConfig = {
+  commits: {
+    label: "Commits",
+    color: "hsl(var(--primary))",
+  },
+};
 
 export default function GitPanel() {
   return (
@@ -49,21 +47,17 @@ export default function GitPanel() {
         </div>
       </div>
       <div className="flex-grow overflow-auto p-2">
-        <h3 className="text-xs font-semibold uppercase text-muted-foreground mb-2">Commits on main</h3>
-        <ul className="space-y-2">
-          {mockCommits.map((commit) => (
-            <li key={commit.hash} className="p-2 rounded-md hover:bg-muted">
-              <p className="font-medium text-sm truncate">{commit.message}</p>
-              <div className="flex items-center justify-between text-xs text-muted-foreground mt-1">
-                <span>{commit.author}</span>
-                <div className="flex items-center gap-2">
-                    <span>{commit.time}</span>
-                    <span className="font-mono bg-background p-0.5 rounded-sm">{commit.hash}</span>
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <h3 className="text-xs font-semibold uppercase text-muted-foreground mb-4">Commit Activity (Last 7 Days)</h3>
+        <ChartContainer config={chartConfig} className="w-full h-[150px]">
+          <ResponsiveContainer>
+            <BarChart data={mockCommits} margin={{ top: 5, right: 10, left: -20, bottom: -10 }}>
+              <XAxis dataKey="day" tickLine={false} axisLine={false} tickMargin={8} fontSize={12} />
+              <YAxis tickLine={false} axisLine={false} tickMargin={8} fontSize={12} allowDecimals={false} />
+              <Tooltip cursor={false} content={<ChartTooltipContent />} />
+              <Bar dataKey="commits" fill="var(--color-commits)" radius={4} />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartContainer>
       </div>
     </div>
   );
