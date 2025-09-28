@@ -20,7 +20,14 @@ export type Folder = z.infer<typeof FolderSchema>;
 export const FileOrFolderSchema = z.union([FileSchema, FolderSchema]);
 export type FileOrFolder = z.infer<typeof FileOrFolderSchema>;
 
-export const VFSStateSchema = z.record(FileOrFolderSchema);
+export const VFSStateSchema = z.record(z.object({
+  id: z.string(),
+  name: z.string(),
+  type: z.enum(['file', 'folder']),
+  content: z.string().optional(),
+  children: z.array(z.string()).optional(),
+  status: z.enum(['modified', 'untracked']).optional(),
+}));
 export type VFSState = z.infer<typeof VFSStateSchema>;
 
 export const initialVFS: VFSState = {
