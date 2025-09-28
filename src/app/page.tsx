@@ -68,19 +68,23 @@ export default function SynapseIDEPage() {
     <main className="h-screen bg-background text-foreground overflow-hidden">
        <ResizablePanelGroup direction="horizontal" className="w-full h-full">
         <ResizablePanel defaultSize={15} minSize={10}>
-          <div className="flex flex-col h-full">
-            <Panel title="File Explorer" icon={<FolderTree />} className="flex-grow">
-              <FileExplorer
-                vfs={vfs}
-                onFileSelect={handleFileSelect}
-                activeFileId={activeFileId}
-              />
-            </Panel>
+          <ResizablePanelGroup direction="vertical">
+            <ResizablePanel>
+              <Panel title="File Explorer" icon={<FolderTree />} className="h-full">
+                <FileExplorer
+                  vfs={vfs}
+                  onFileSelect={handleFileSelect}
+                  activeFileId={activeFileId}
+                />
+              </Panel>
+            </ResizablePanel>
             <ResizableHandle withHandle />
-            <Panel title="Version Control" icon={<GitMerge />} defaultSize={30}>
-               <GitPanel />
-            </Panel>
-          </div>
+            <ResizablePanel defaultSize={30}>
+              <Panel title="Version Control" icon={<GitMerge />} className="h-full">
+                 <GitPanel />
+              </Panel>
+            </ResizablePanel>
+          </ResizablePanelGroup>
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={55} minSize={30}>
