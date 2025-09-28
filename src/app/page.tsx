@@ -38,12 +38,13 @@ export default function SynapseIDEPage() {
   const [vfs, dispatch] = useReducer(vfsReducer, initialVFS);
   const [activeFileId, setActiveFileId] = useState<string | null>("1"); // index.html
   const [openFileIds, setOpenFileIds] = useState<string[]>(["1"]);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const activeFile = activeFileId ? vfs[activeFileId] : null;
 
   const handleVFSUpdate = useCallback((newVFS: VFSState) => {
     dispatch({ type: 'SET_VFS', payload: newVFS });
-    const defaultFile = Object.values(newVFS).find(f => f.name === 'index.html');
+    const defaultFile = Object.values(newVFS).find(f => f.name === 'index.html' || f.name.endsWith('.tsx'));
     if (defaultFile) {
         setOpenFileIds([defaultFile.id]);
         setActiveFileId(defaultFile.id);
@@ -63,13 +64,6 @@ export default function SynapseIDEPage() {
     }
   }, [vfs, openFileIds]);
 
-  
-  const handleContentChange = useCallback((id: string, content: string) => {
-    dispatch({ type: "UPDATE_FILE_CONTENT", payload: { id, content } });
-  }, []);
-
-  const openFiles = openFileIds.map(id => vfs[id]).filter((f): f is FileOrFolder => f !== undefined);
-
   return (
     <main className="h-screen bg-background text-foreground overflow-hidden">
        <ResizablePanelGroup direction="horizontal" className="w-full h-full">
@@ -88,22 +82,28 @@ export default function SynapseIDEPage() {
             </Tabs>
         </ResizablePanel>
         <ResizableHandle withHandle />
-        <ResizablePanel defaultSize={80} minSize={30}>
+        <ResizablePanel defaultSize={50} minSize={30}>
+            <div className="p-2 h-full flex flex-col">
+                <h2 className="text-lg font-semibold flex items-center gap-2 p-2"><Bot/> AI Assistant</h2>
+                <AiAssistant
+                    vfs={vfs}
+                    activeFile={activeFile}
+                    onVFSUpdate={handleVFSUpdate}
+                    isGenerating={isGenerating}
+                    setIsGenerating={setIsGenerating}
+                />
+            </div>
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel defaultSize={30} minSize={20}>
             <ResizablePanelGroup direction="vertical">
                 <ResizablePanel defaultSize={60} minSize={20}>
-                    <Tabs defaultValue="code" className="h-full flex flex-col">
+                     <Tabs defaultValue="agents" className="h-full flex flex-col">
                         <TabsList className="m-2">
-                             <TabsTrigger value="code" className="flex-1 gap-2"><Code/> Code</TabsTrigger>
                              <TabsTrigger value="agents" className="flex-1 gap-2"><GitBranch/> Agents</TabsTrigger>
                         </TabsList>
-                         <TabsContent value="code" className="flex-grow">
-                             <div className="p-2 h-full flex flex-col">
-                                <h2 className="text-lg font-semibold flex items-center gap-2 p-2"><Bot/> AI Assistant</h2>
-                                <AiAssistant vfs={vfs} activeFile={activeFile} onVFSUpdate={handleVFSUpdate} />
-                            </div>
-                        </TabsContent>
                         <TabsContent value="agents" className="flex-grow">
-                            <AgentsPanel />
+                            <AgentsPanel isGenerating={isGenerating} />
                         </TabsContent>
                     </Tabs>
                 </ResizablePanel>

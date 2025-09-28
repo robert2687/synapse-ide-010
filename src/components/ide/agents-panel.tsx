@@ -40,11 +40,14 @@ const simulationPlan = [
     { agent: "QA & Security Agent", task: "Running authentication tests...", duration: 3000, log: "Authentication endpoint tests passed, including checks for SQL injection. DevOps agent, the auth service is cleared for deployment." },
     { agent: "DevOps Agent", task: "Containerizing application...", duration: 4000, log: "Application is containerized with Docker. Preparing deployment to staging environment." },
     { agent: "DevOps Agent", task: "Deploying to staging...", duration: 3000, log: "Deployment to staging successful. The application is ready for final review." },
-    { agent: "Orchestrator", task: "All tasks complete.", duration: 1000, log: "The development cycle is complete. The application is deployed to the staging environment and is ready for review." },
+    { agent: "Orchestrator", task: "All tasks complete.", duration: 1000, log: "The development cycle is complete. The application is deployed and ready for review." },
 ];
 
+interface AgentsPanelProps {
+    isGenerating: boolean;
+}
 
-export default function AgentsPanel() {
+export default function AgentsPanel({ isGenerating }: AgentsPanelProps) {
   const [agents, setAgents] = useState<Agent[]>(initialAgents);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [currentStep, setCurrentStep] = useState(-1);
@@ -52,32 +55,30 @@ export default function AgentsPanel() {
 
   useEffect(() => {
     if (scrollAreaRef.current) {
-        scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+        const viewport = scrollAreaRef.current.querySelector('div');
+        if (viewport) {
+            viewport.scrollTop = viewport.scrollHeight;
+        }
     }
   }, [logs]);
 
   useEffect(() => {
-    // A simple trigger to start the simulation
-    const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === ' ' && e.ctrlKey) { // Ctrl+Space to start
-            if (currentStep === -1) {
-                setCurrentStep(0);
-            }
-        }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentStep]);
+    if (isGenerating && currentStep === -1) {
+        setCurrentStep(0);
+    } else if (!isGenerating) {
+        // If generation is cancelled or finished externally
+        setCurrentStep(-1);
+        setAgents(initialAgents);
+    }
+  }, [isGenerating, currentStep]);
 
 
   useEffect(() => {
     if (currentStep >= 0 && currentStep < simulationPlan.length) {
       const step = simulationPlan[currentStep];
       
-      // Update agent status
       setAgents(prev => prev.map(a => a.name === step.agent ? { ...a, status: step.task } : a));
       
-      // Add orchestrator log before the task
       if (currentStep > 0) {
         const prevStep = simulationPlan[currentStep-1];
          if (prevStep.agent !== step.agent) {
@@ -96,13 +97,11 @@ export default function AgentsPanel() {
             id: Date.now(),
             timestamp: new Date().toLocaleTimeString(),
             source: "Orchestrator",
-            message: `Starting workflow. Instructing ${step.agent} to begin: '${step.task}'`
+            message: `App generation started. Instructing ${step.agent} to begin: '${step.task}'`
         }]);
       }
 
-
       const timer = setTimeout(() => {
-        // Add agent's completion log
         setLogs(prev => [
             ...prev,
             {
@@ -113,20 +112,17 @@ export default function AgentsPanel() {
             }
         ]);
 
-        // Reset previous agent to Idle if the agent is changing
         if (currentStep + 1 < simulationPlan.length && simulationPlan[currentStep+1].agent !== step.agent) {
              setAgents(prev => prev.map(a => a.name === step.agent ? { ...a, status: "Idle" } : a));
         }
 
-        // Move to next step
         setCurrentStep(currentStep + 1);
 
       }, step.duration);
 
       return () => clearTimeout(timer);
     } else if (currentStep === simulationPlan.length) {
-        // End of simulation, reset all to idle
-        setAgents(initialAgents);
+        setAgents(initialAgents); // Reset all to idle
         setCurrentStep(-1); // Ready for another run
     }
   }, [currentStep]);
@@ -153,7 +149,7 @@ export default function AgentsPanel() {
         </div>
         <ScrollArea className="flex-grow p-2" ref={scrollAreaRef}>
             <div className="space-y-2 font-mono text-xs">
-                {logs.length === 0 && <p className="text-muted-foreground">Press Ctrl+Space to start agent simulation...</p>}
+                {logs.length === 0 && <p className="text-muted-foreground">Ask the AI Assistant to build an app to start the agent workflow...</p>}
                 {logs.map(log => (
                     <div key={log.id} className="flex gap-2 items-start">
                         <span className="text-muted-foreground/50">{log.timestamp}</span>
