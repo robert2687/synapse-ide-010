@@ -43,26 +43,27 @@ export default function EditorPanel({
                         {openFileIds.map(id => {
                             const file = vfs[id];
                             return (
-                                <TabsTrigger
-                                    key={id}
-                                    value={id}
-                                    className={cn(
-                                        "h-full relative flex items-center gap-2 rounded-none border-b-2 border-r border-transparent bg-transparent px-4 data-[state=active]:bg-background data-[state=active]:border-primary data-[state=active]:shadow-none",
-                                        "hover:bg-muted/50"
-                                    )}
-                                >
-                                    <FileIcon filename={file.name} className="h-4 w-4" />
-                                    <span>{file.name}</span>
-                                    <button 
+                                <div key={id} className="relative">
+                                    <TabsTrigger
+                                        value={id}
+                                        className={cn(
+                                            "h-full flex items-center gap-2 rounded-none border-b-2 border-r border-transparent bg-transparent pl-4 pr-8 data-[state=active]:bg-background data-[state=active]:border-primary data-[state=active]:shadow-none",
+                                            "hover:bg-muted/50"
+                                        )}
+                                    >
+                                        <FileIcon filename={file.name} className="h-4 w-4" />
+                                        <span>{file.name}</span>
+                                    </TabsTrigger>
+                                     <button 
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onCloseTab(id);
                                         }} 
-                                        className="ml-2 rounded-sm p-0.5 hover:bg-muted-foreground/20"
+                                        className="absolute top-1/2 right-1.5 -translate-y-1/2 rounded-sm p-0.5 hover:bg-muted-foreground/20"
                                     >
                                         <X className="h-3 w-3" />
                                     </button>
-                                </TabsTrigger>
+                                </div>
                             )
                         })}
                     </TabsList>
@@ -79,6 +80,3 @@ export default function EditorPanel({
         </div>
     );
 }
-
-
-    
