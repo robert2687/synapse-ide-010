@@ -77,27 +77,29 @@ export default function AiAssistant({ vfs, activeFile }: AiAssistantProps) {
               key={index}
               className={cn(
                 "flex items-start gap-3",
-                message.role === "user" ? "justify-end" : "justify-start"
+                message.role === "user" ? "justify-end flex-row-reverse" : "justify-start"
               )}
             >
-              {message.role === "assistant" && <Bot className="h-6 w-6 text-primary flex-shrink-0" />}
+              {message.role === "assistant" ? 
+                <Bot className="h-6 w-6 text-primary flex-shrink-0" /> :
+                <User className="h-6 w-6 text-accent flex-shrink-0" />
+              }
               <div
                 className={cn(
-                  "p-3 rounded-lg max-w-sm",
+                  "p-3 rounded-lg max-w-sm shadow-md",
                   message.role === "user"
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-accent text-accent-foreground"
                     : "bg-muted"
                 )}
               >
                 <pre className="text-sm whitespace-pre-wrap font-sans">{message.content}</pre>
               </div>
-              {message.role === "user" && <User className="h-6 w-6 text-muted-foreground flex-shrink-0" />}
             </div>
           ))}
           {isLoading && (
              <div className="flex items-start gap-3 justify-start">
                <Bot className="h-6 w-6 text-primary flex-shrink-0" />
-               <div className="p-3 rounded-lg bg-muted flex items-center">
+               <div className="p-3 rounded-lg bg-muted flex items-center shadow-md">
                   <Loader2 className="h-5 w-5 animate-spin" />
                </div>
              </div>
@@ -110,7 +112,7 @@ export default function AiAssistant({ vfs, activeFile }: AiAssistantProps) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask the AI to generate code, refactor, or explain..."
-            className="flex-grow resize-none text-sm min-h-[40px]"
+            className="flex-grow resize-none text-sm min-h-[40px] rounded-md border"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
