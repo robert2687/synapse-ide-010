@@ -1,8 +1,6 @@
 'use server';
 
 import { generateApp, type GenerateAppInput, type GenerateAppOutput } from '@/ai/flows/generate-app';
-import type { VFSState } from './vfs';
-
 
 export type HandleAiQueryOutput =
   | { type: 'vfs'; data: GenerateAppOutput }

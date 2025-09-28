@@ -28,14 +28,10 @@ User Prompt:
 "{{{prompt}}}"
 
 Please generate a simple "hello world" style web application. It should include an index.html, a style.css, and a script.js file.
-You must return the file structure in the virtual file system (VFS) format.
-The VFS object is a map where keys are IDs and values are file or folder objects.
-- The root folder must have an ID of "0" and be named "synapse-project".
-- All other files and folders should be children of this root folder.
-- IDs must be unique strings.
-- Files should have a 'type' of 'file' and 'content'.
-- Folders should have a 'type' of 'folder' and a 'children' array of IDs.
+You must return a flat array of file objects.
+- Each file object should have a 'path' (e.g., "src/index.html") and 'content'.
 - Do not add any comments to the code.
+- Do not create any folders, just the files with their full paths.
 `,
 });
 
