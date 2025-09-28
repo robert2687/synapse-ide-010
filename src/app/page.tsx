@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useReducer, useState } from "react";
+import { useCallback, useReducer, useState } from "react";
 import type { FileOrFolder, VFSState } from "@/lib/vfs";
 import { initialVFS } from "@/lib/vfs";
 import FileExplorer from "@/components/ide/file-explorer";
@@ -9,8 +9,9 @@ import LivePreview from "@/components/ide/live-preview";
 import AiAssistant from "@/components/ide/ai-assistant";
 import GitPanel from "@/components/ide/git-panel";
 import Panel from "@/components/ide/panel";
-import { Bot, Code, FolderTree, GitMerge, PanelRightOpen } from "lucide-react";
+import { Bot, FolderTree, GitMerge, PanelRightOpen } from "lucide-react";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type VFSAction =
   | { type: "UPDATE_FILE_CONTENT"; payload: { id: string; content: string } }
@@ -67,27 +68,26 @@ export default function SynapseIDEPage() {
   return (
     <main className="h-screen bg-background text-foreground overflow-hidden">
        <ResizablePanelGroup direction="horizontal" className="w-full h-full">
-        <ResizablePanel defaultSize={15} minSize={10}>
-          <ResizablePanelGroup direction="vertical">
-            <ResizablePanel>
-              <Panel title="File Explorer" icon={<FolderTree />} className="h-full">
-                <FileExplorer
+        <ResizablePanel defaultSize={20} minSize={15}>
+          <Tabs defaultValue="files" className="h-full flex flex-col">
+            <TabsList className="m-2">
+              <TabsTrigger value="files" className="flex-1 gap-2"><FolderTree/> Files</TabsTrigger>
+              <TabsTrigger value="git" className="flex-1 gap-2"><GitMerge/> Version Control</TabsTrigger>
+            </TabsList>
+            <TabsContent value="files" className="flex-grow">
+               <FileExplorer
                   vfs={vfs}
                   onFileSelect={handleFileSelect}
                   activeFileId={activeFileId}
                 />
-              </Panel>
-            </ResizablePanel>
-            <ResizableHandle withHandle />
-            <ResizablePanel defaultSize={30}>
-              <Panel title="Version Control" icon={<GitMerge />} className="h-full">
-                 <GitPanel />
-              </Panel>
-            </ResizablePanel>
-          </ResizablePanelGroup>
+            </TabsContent>
+            <TabsContent value="git" className="flex-grow">
+               <GitPanel />
+            </TabsContent>
+          </Tabs>
         </ResizablePanel>
         <ResizableHandle withHandle />
-        <ResizablePanel defaultSize={55} minSize={30}>
+        <ResizablePanel defaultSize={50} minSize={30}>
            <EditorPanel
                 openFiles={openFiles}
                 activeFile={activeFile}
@@ -100,9 +100,7 @@ export default function SynapseIDEPage() {
         <ResizablePanel defaultSize={30} minSize={20}>
            <ResizablePanelGroup direction="vertical">
             <ResizablePanel defaultSize={50} minSize={20}>
-              <Panel title="Live Preview" icon={<PanelRightOpen/>} className="h-full">
                 <LivePreview vfs={vfs} />
-              </Panel>
             </ResizablePanel>
             <ResizableHandle withHandle />
             <ResizablePanel defaultSize={50} minSize={20}>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import type { VFSState } from "@/lib/vfs";
+import { PanelRightOpen } from "lucide-react";
 
 interface LivePreviewProps {
   vfs: VFSState;
@@ -51,11 +52,19 @@ export default function LivePreview({ vfs }: LivePreviewProps) {
   }, [compiledCode]);
 
   return (
-    <iframe
-      srcDoc={srcDoc}
-      title="Live Preview"
-      sandbox="allow-scripts allow-modals"
-      className="w-full h-full bg-white"
-    />
+    <div className="flex flex-col h-full bg-card/50">
+      <header className="flex items-center gap-2 p-2 border-b h-10 flex-shrink-0">
+        <div className="text-muted-foreground"><PanelRightOpen /></div>
+        <h2 className="text-sm font-medium">Live Preview</h2>
+      </header>
+      <div className="flex-grow">
+        <iframe
+          srcDoc={srcDoc}
+          title="Live Preview"
+          sandbox="allow-scripts allow-modals"
+          className="w-full h-full bg-white"
+        />
+      </div>
+    </div>
   );
 }
