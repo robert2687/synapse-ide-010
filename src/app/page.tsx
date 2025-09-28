@@ -11,7 +11,6 @@ import { Bot, FolderTree, Eye } from "lucide-react";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import EditorPanel from "@/components/ide/editor-panel";
-import "dotenv/config";
 
 
 type VFSAction =
