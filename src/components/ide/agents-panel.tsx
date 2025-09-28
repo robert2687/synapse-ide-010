@@ -31,13 +31,16 @@ const initialAgents: Agent[] = [
 ];
 
 const simulationPlan = [
-    { agent: "Requirements Analyst", task: "Analyzing user prompt...", duration: 2000, log: "I have analyzed the user's request to build a recipe tracking app. I will now pass the requirements to the UI/UX Architect." },
-    { agent: "UI/UX Architect", task: "Creating wireframes...", duration: 3000, log: "Wireframes for the main pages are complete. Frontend Coder, please begin implementation." },
-    { agent: "Frontend Coder", task: "Implementing login form...", duration: 4000, log: "The login form component is built. Backend Coder, I need the authentication endpoint." },
-    { agent: "Backend Coder", task: "Developing API endpoints...", duration: 3500, log: "The '/api/login' endpoint is ready. QA Agent, please run tests." },
-    { agent: "QA & Security Agent", task: "Running unit tests...", duration: 3000, log: "Unit tests for the authentication service have passed. DevOps agent, you can now proceed with deployment." },
-    { agent: "DevOps Agent", task: "Containerizing application...", duration: 4000, log: "The application is containerized and ready for staging deployment." },
-    { agent: "Orchestrator", task: "All tasks complete.", duration: 1000, log: "The development cycle is complete. The application is ready for review." },
+    { agent: "Requirements Analyst", task: "Analyzing user prompt...", duration: 2500, log: "Analysis complete. The user wants a recipe tracking app with ratings and favorites. Passing to UI/UX Architect for design." },
+    { agent: "UI/UX Architect", task: "Sketching main layouts...", duration: 3000, log: "Initial sketches are done. Moving to detailed wireframes for key screens." },
+    { agent: "UI/UX Architect", task: "Creating component wireframes...", duration: 2000, log: "Wireframes for all pages and components are complete. Frontend Coder, please begin implementation based on these designs." },
+    { agent: "Frontend Coder", task: "Implementing login form component...", duration: 4500, log: "The base component for the login form is built. Now styling and adding state management." },
+    { agent: "Frontend Coder", task: "Handling login form submission...", duration: 2500, log: "Login form UI is complete. Backend Coder, I need an authentication endpoint at '/api/auth/login'." },
+    { agent: "Backend Coder", task: "Developing auth endpoints...", duration: 3500, log: "The '/api/auth/login' and '/api/auth/register' endpoints are ready and connected to the database. QA Agent, please run integration and security tests." },
+    { agent: "QA & Security Agent", task: "Running authentication tests...", duration: 3000, log: "Authentication endpoint tests passed, including checks for SQL injection. DevOps agent, the auth service is cleared for deployment." },
+    { agent: "DevOps Agent", task: "Containerizing application...", duration: 4000, log: "Application is containerized with Docker. Preparing deployment to staging environment." },
+    { agent: "DevOps Agent", task: "Deploying to staging...", duration: 3000, log: "Deployment to staging successful. The application is ready for final review." },
+    { agent: "Orchestrator", task: "All tasks complete.", duration: 1000, log: "The development cycle is complete. The application is deployed to the staging environment and is ready for review." },
 ];
 
 
@@ -77,23 +80,42 @@ export default function AgentsPanel() {
       // Add orchestrator log before the task
       if (currentStep > 0) {
         const prevStep = simulationPlan[currentStep-1];
-        setLogs(prev => [
-            ...prev,
-            {
-                id: Date.now(),
-                timestamp: new Date().toLocaleTimeString(),
-                source: "Orchestrator",
-                message: `Notifying ${step.agent}: ${prevStep.log}`
-            }
-        ]);
+         if (prevStep.agent !== step.agent) {
+          setLogs(prev => [
+              ...prev,
+              {
+                  id: Date.now(),
+                  timestamp: new Date().toLocaleTimeString(),
+                  source: "Orchestrator",
+                  message: `Task complete. Instructing ${step.agent} to begin: '${step.task}'`
+              }
+          ]);
+        }
+      } else {
+         setLogs([{
+            id: Date.now(),
+            timestamp: new Date().toLocaleTimeString(),
+            source: "Orchestrator",
+            message: `Starting workflow. Instructing ${step.agent} to begin: '${step.task}'`
+        }]);
       }
 
 
       const timer = setTimeout(() => {
-        // Reset previous agent to Idle
-        if (currentStep > 0) {
-            const prevStep = simulationPlan[currentStep-1];
-            setAgents(prev => prev.map(a => a.name === prevStep.agent ? { ...a, status: "Idle" } : a));
+        // Add agent's completion log
+        setLogs(prev => [
+            ...prev,
+            {
+                id: Date.now() + 1,
+                timestamp: new Date().toLocaleTimeString(),
+                source: step.agent,
+                message: step.log
+            }
+        ]);
+
+        // Reset previous agent to Idle if the agent is changing
+        if (currentStep + 1 < simulationPlan.length && simulationPlan[currentStep+1].agent !== step.agent) {
+             setAgents(prev => prev.map(a => a.name === step.agent ? { ...a, status: "Idle" } : a));
         }
 
         // Move to next step
