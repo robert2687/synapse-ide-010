@@ -4,14 +4,17 @@ import { useCallback, useReducer, useState } from "react";
 import type { FileOrFolder, VFSState } from "@/lib/vfs";
 import { initialVFS } from "@/lib/vfs";
 import FileExplorer from "@/components/ide/file-explorer";
-import EditorPanel from "@/components/ide/editor-panel";
 import LivePreview from "@/components/ide/live-preview";
 import AiAssistant from "@/components/ide/ai-assistant";
 import GitPanel from "@/components/ide/git-panel";
-import Panel from "@/components/ide/panel";
-import { Bot, FolderTree, GitMerge, PanelRightOpen } from "lucide-react";
+import { Bot, FolderTree, GitMerge, Code, Eye } from "lucide-react";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { FileIcon } from "@/components/icons";
+import { X } from "lucide-react";
+import { cn } from "@/lib/utils";
+
 
 type VFSAction =
   | { type: "UPDATE_FILE_CONTENT"; payload: { id: string; content: string } }
@@ -65,10 +68,59 @@ export default function SynapseIDEPage() {
 
   const openFiles = openFileIds.map(id => vfs[id]).filter((f): f is FileOrFolder => f !== undefined);
 
+  const Editor = () => {
+    if (!activeFile || activeFile.type !== "file") {
+      return (
+        <div className="h-full flex flex-col items-center justify-center bg-card text-muted-foreground p-4 text-center">
+           <p className="text-lg font-medium">No file selected</p>
+           <p className="text-sm">Select a file from the explorer to begin editing.</p>
+        </div>
+      );
+    }
+    return (
+      <div className="flex flex-col h-full bg-card">
+        <div className="flex border-b bg-background/50 overflow-x-auto">
+          {openFiles.map((file) => (
+            <div
+              key={file.id}
+              onClick={() => setActiveFileId(file.id)}
+              className={cn(
+                "flex items-center gap-2 p-2 border-r cursor-pointer text-sm whitespace-nowrap flex-shrink-0",
+                activeFile.id === file.id
+                  ? "bg-card border-b-2 border-b-primary -mb-px"
+                  : "text-muted-foreground hover:bg-muted"
+              )}
+            >
+              <FileIcon filename={file.name} className="h-4 w-4" />
+              <span className="truncate max-w-xs">{file.name}</span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCloseTab(file.id);
+                }}
+                className="p-0.5 rounded-full hover:bg-muted-foreground/20 flex-shrink-0"
+                aria-label={`Close file ${file.name}`}
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          ))}
+        </div>
+        <Textarea
+          key={activeFile.id}
+          value={activeFile.content}
+          onChange={(e) => handleContentChange(activeFile.id, e.target.value)}
+          className="w-full h-full border-0 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-none bg-card"
+          aria-label={`Editing file ${activeFile.name}`}
+        />
+      </div>
+    );
+  }
+
   return (
     <main className="h-screen bg-background text-foreground overflow-hidden">
        <ResizablePanelGroup direction="horizontal" className="w-full h-full">
-        <ResizablePanel defaultSize={20} minSize={15}>
+        <ResizablePanel defaultSize={25} minSize={20}>
           <Tabs defaultValue="files" className="h-full flex flex-col">
             <TabsList className="m-2">
               <TabsTrigger value="files" className="flex-1 gap-2"><FolderTree/> Files</TabsTrigger>
@@ -87,28 +139,23 @@ export default function SynapseIDEPage() {
           </Tabs>
         </ResizablePanel>
         <ResizableHandle withHandle />
-        <ResizablePanel defaultSize={50} minSize={30}>
-           <EditorPanel
-                openFiles={openFiles}
-                activeFile={activeFile}
-                onSelectTab={setActiveFileId}
-                onCloseTab={handleCloseTab}
-                onContentChange={handleContentChange}
-            />
-        </ResizablePanel>
-        <ResizableHandle withHandle />
-        <ResizablePanel defaultSize={30} minSize={20}>
-           <ResizablePanelGroup direction="vertical">
-            <ResizablePanel defaultSize={50} minSize={20}>
+        <ResizablePanel defaultSize={75} minSize={30}>
+          <Tabs defaultValue="editor" className="h-full flex flex-col">
+              <TabsList className="m-2">
+                <TabsTrigger value="editor" className="flex-1 gap-2"><Code/> Code</TabsTrigger>
+                <TabsTrigger value="preview" className="flex-1 gap-2"><Eye/> Preview</TabsTrigger>
+                <TabsTrigger value="assistant" className="flex-1 gap-2"><Bot/> AI Assistant</TabsTrigger>
+              </TabsList>
+              <TabsContent value="editor" className="flex-grow">
+                <Editor />
+              </TabsContent>
+              <TabsContent value="preview" className="flex-grow">
                 <LivePreview vfs={vfs} />
-            </ResizablePanel>
-            <ResizableHandle withHandle />
-            <ResizablePanel defaultSize={50} minSize={20}>
-               <Panel title="AI Assistant" icon={<Bot />} className="h-full">
+              </TabsContent>
+              <TabsContent value="assistant" className="flex-grow">
                 <AiAssistant vfs={vfs} activeFile={activeFile} />
-              </Panel>
-            </ResizablePanel>
-           </ResizablePanelGroup>
+              </TabsContent>
+            </Tabs>
         </ResizablePanel>
       </ResizablePanelGroup>
     </main>
