@@ -35,7 +35,7 @@ export default function EditorPanel({
     <div className="flex flex-col h-full bg-card">
       <div className="flex border-b bg-background/50 overflow-x-auto">
         {openFiles.map((file) => (
-          <button
+          <div
             key={file.id}
             onClick={() => onSelectTab(file.id)}
             className={cn(
@@ -53,10 +53,11 @@ export default function EditorPanel({
                 onCloseTab(file.id);
               }}
               className="p-0.5 rounded-full hover:bg-muted-foreground/20 flex-shrink-0"
+              aria-label={`Close file ${file.name}`}
             >
               <X className="h-3 w-3" />
             </button>
-          </button>
+          </div>
         ))}
       </div>
       <Textarea
