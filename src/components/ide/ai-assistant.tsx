@@ -69,7 +69,7 @@ export default function AiAssistant({ vfs, activeFile }: AiAssistantProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-card">
+    <div className="flex flex-col h-full bg-card/50">
       <ScrollArea className="flex-grow p-4" ref={scrollAreaRef}>
         <div className="space-y-4">
           {messages.map((message, index) => (
@@ -86,9 +86,9 @@ export default function AiAssistant({ vfs, activeFile }: AiAssistantProps) {
               }
               <div
                 className={cn(
-                  "p-3 rounded-lg max-w-sm shadow-md",
+                  "p-3 rounded-lg max-w-sm shadow",
                   message.role === "user"
-                    ? "bg-accent text-accent-foreground"
+                    ? "bg-primary text-primary-foreground"
                     : "bg-muted"
                 )}
               >
@@ -99,20 +99,20 @@ export default function AiAssistant({ vfs, activeFile }: AiAssistantProps) {
           {isLoading && (
              <div className="flex items-start gap-3 justify-start">
                <Bot className="h-6 w-6 text-primary flex-shrink-0" />
-               <div className="p-3 rounded-lg bg-muted flex items-center shadow-md">
+               <div className="p-3 rounded-lg bg-muted flex items-center shadow">
                   <Loader2 className="h-5 w-5 animate-spin" />
                </div>
              </div>
           )}
         </div>
       </ScrollArea>
-      <div className="p-2 border-t">
+      <div className="p-2 border-t bg-card/50">
         <form onSubmit={handleSubmit} className="flex gap-2">
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask the AI to generate code, refactor, or explain..."
-            className="flex-grow resize-none text-sm min-h-[40px] rounded-md border"
+            className="flex-grow resize-none text-sm min-h-[40px] rounded-md border bg-card"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
