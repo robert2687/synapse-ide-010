@@ -10,6 +10,7 @@ import { Bot, FolderTree, Code, Eye, GitBranch } from "lucide-react";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AgentsPanel from "@/components/ide/agents-panel";
+import "dotenv/config";
 
 
 type VFSAction =
