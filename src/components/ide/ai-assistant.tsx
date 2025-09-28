@@ -3,9 +3,9 @@
 import { useState, useRef, useEffect, Dispatch, SetStateAction } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { handleAiQuery, type HandleAiQueryOutput } from "@/lib/actions";
+import { handleAiQuery } from "@/lib/actions";
 import type { FileOrFolder, VFSState } from "@/lib/vfs";
-import { Bot, Send, User, Loader2, Square } from "lucide-react";
+import { Bot, Send, User, Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -28,7 +28,6 @@ export default function AiAssistant({ vfs, activeFile, onVFSUpdate, isGenerating
   const [input, setInput] = useState("");
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const isAppGenRequest = /^(build|create|generate|make) (me )?an? app/i.test(input);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -50,21 +49,7 @@ export default function AiAssistant({ vfs, activeFile, onVFSUpdate, isGenerating
     setIsGenerating(true);
 
     try {
-      const fileContents: Record<string, string> = {};
-      for (const file of Object.values(vfs)) {
-        if (file.type === "file") {
-          fileContents[file.name] = file.content;
-        }
-      }
-
-      // Simulate agent workflow time for app generation
-      if (/^(build|create|generate|make) (me )?an? app/i.test(currentInput)) {
-        // Duration of the full simulationPlan in agents-panel.tsx
-        const simulationDuration = 26500; 
-        await new Promise(resolve => setTimeout(resolve, simulationDuration));
-      }
-
-      const result = await handleAiQuery(currentInput, fileContents, activeFile?.name);
+      const result = await handleAiQuery(currentInput);
       
       if(result.type === 'error') {
         throw new Error(result.error);
@@ -72,9 +57,6 @@ export default function AiAssistant({ vfs, activeFile, onVFSUpdate, isGenerating
         onVFSUpdate(result.data.vfs);
         const assistantMessage: Message = { role: "assistant", content: `I've generated the file structure for your application. You can see it in the file explorer.` };
         setMessages((prev) => [...prev, assistantMessage]);
-      } else if (result.type === 'response') {
-         const assistantMessage: Message = { role: "assistant", content: result.data.response };
-         setMessages((prev) => [...prev, assistantMessage]);
       }
 
     } catch (error) {
@@ -90,11 +72,6 @@ export default function AiAssistant({ vfs, activeFile, onVFSUpdate, isGenerating
     } finally {
       setIsGenerating(false);
     }
-  };
-  
-  const handleStop = () => {
-    // This is a placeholder for a real stop mechanism
-    setIsGenerating(false); 
   };
 
   return (
@@ -130,7 +107,7 @@ export default function AiAssistant({ vfs, activeFile, onVFSUpdate, isGenerating
                <Bot className="h-6 w-6 text-primary flex-shrink-0" />
                <div className="p-3 rounded-lg bg-muted flex items-center shadow">
                   <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                  <span className="text-sm ml-2 text-primary">{isAppGenRequest ? "Agents at work..." : "Thinking..."}</span>
+                  <span className="text-sm ml-2 text-primary">Generating...</span>
                </div>
              </div>
           )}
@@ -141,19 +118,13 @@ export default function AiAssistant({ vfs, activeFile, onVFSUpdate, isGenerating
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask the AI to generate code, refactor, or build an app..."
+            placeholder="Describe the app you want to build..."
             className="flex-grow h-10 rounded-md border bg-card text-base md:text-sm font-sans"
             disabled={isGenerating}
           />
-          {isGenerating ? (
-              <Button type="button" size="icon" variant="destructive" onClick={handleStop}>
-                <Square className="h-4 w-4" />
-              </Button>
-          ) : (
-            <Button type="submit" size="icon" disabled={!input.trim()}>
-              <Send className="h-4 w-4" />
-            </Button>
-          )}
+          <Button type="submit" size="icon" disabled={!input.trim() || isGenerating}>
+            <Send className="h-4 w-4" />
+          </Button>
         </form>
       </div>
     </div>

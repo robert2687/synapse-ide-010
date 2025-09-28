@@ -43,7 +43,7 @@ export default function EditorPanel({
                         {openFileIds.map(id => {
                             const file = vfs[id];
                             return (
-                                <div key={id} className="relative">
+                                <div key={id} className="relative group">
                                     <TabsTrigger
                                         value={id}
                                         className={cn(
@@ -59,7 +59,7 @@ export default function EditorPanel({
                                             e.stopPropagation();
                                             onCloseTab(id);
                                         }} 
-                                        className="absolute top-1/2 right-1.5 -translate-y-1/2 rounded-sm p-0.5 hover:bg-muted-foreground/20"
+                                        className="absolute top-1/2 right-1.5 -translate-y-1/2 rounded-sm p-0.5 opacity-0 group-hover:opacity-100 hover:bg-muted-foreground/20"
                                     >
                                         <X className="h-3 w-3" />
                                     </button>

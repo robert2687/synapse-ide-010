@@ -7,10 +7,9 @@ import { initialVFS } from "@/lib/vfs";
 import FileExplorer from "@/components/ide/file-explorer";
 import LivePreview from "@/components/ide/live-preview";
 import AiAssistant from "@/components/ide/ai-assistant";
-import { Bot, FolderTree, Code, Eye, GitBranch } from "lucide-react";
+import { Bot, FolderTree, Eye } from "lucide-react";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import AgentsPanel from "@/components/ide/agents-panel";
 import EditorPanel from "@/components/ide/editor-panel";
 import "dotenv/config";
 
@@ -91,7 +90,7 @@ export default function SynapseIDEPage() {
   return (
     <main className="h-screen bg-background text-foreground overflow-hidden">
        <ResizablePanelGroup direction="horizontal" className="w-full h-full">
-        <ResizablePanel defaultSize={15} minSize={10}>
+        <ResizablePanel defaultSize={20} minSize={10}>
             <Tabs defaultValue="files" className="h-full flex flex-col">
                 <TabsList className="m-2">
                     <TabsTrigger value="files" className="flex-1 gap-2"><FolderTree/> Files</TabsTrigger>
@@ -106,56 +105,45 @@ export default function SynapseIDEPage() {
             </Tabs>
         </ResizablePanel>
         <ResizableHandle withHandle />
-        <ResizablePanel defaultSize={85} minSize={30}>
-            <ResizablePanelGroup direction="horizontal">
-                <ResizablePanel defaultSize={40} minSize={25}>
-                    <Tabs defaultValue="assistant" className="h-full flex flex-col">
-                        <TabsList className="m-2">
-                            <TabsTrigger value="assistant" className="flex-1 gap-2"><Bot/> AI Assistant</TabsTrigger>
-                            <TabsTrigger value="agents" className="flex-1 gap-2"><GitBranch/> Agents</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="assistant" className="flex-grow">
-                             <AiAssistant
-                                vfs={vfs}
-                                activeFile={activeFile}
-                                onVFSUpdate={handleVFSUpdate}
-                                isGenerating={isGenerating}
-                                setIsGenerating={setIsGenerating}
-                            />
-                        </TabsContent>
-                         <TabsContent value="agents" className="flex-grow">
-                            <AgentsPanel isGenerating={isGenerating} />
-                        </TabsContent>
-                    </Tabs>
+        <ResizablePanel defaultSize={80} minSize={30}>
+            <ResizablePanelGroup direction="vertical">
+                <ResizablePanel defaultSize={60} minSize={20}>
+                     <EditorPanel
+                        vfs={vfs}
+                        openFileIds={openFileIds}
+                        activeFileId={activeFileId}
+                        onFileSelect={setActiveFileId}
+                        onFileContentChange={handleFileContentChange}
+                        onCloseTab={handleCloseTab}
+                    />
                 </ResizablePanel>
                 <ResizableHandle withHandle />
-                <ResizablePanel defaultSize={60} minSize={30}>
-                     <ResizablePanelGroup direction="vertical">
-                        <ResizablePanel defaultSize={60} minSize={20}>
-                            <Tabs defaultValue="code" className="h-full flex flex-col">
-                                <TabsList className="m-2">
-                                    <TabsTrigger value="code" className="flex-1 gap-2"><Code/> Editor</TabsTrigger>
-                                </TabsList>
-                                <TabsContent value="code" className="flex-grow">
-                                     <EditorPanel
-                                        vfs={vfs}
-                                        openFileIds={openFileIds}
-                                        activeFileId={activeFileId}
-                                        onFileSelect={setActiveFileId}
-                                        onFileContentChange={handleFileContentChange}
-                                        onCloseTab={handleCloseTab}
-                                    />
-                                </TabsContent>
-                            </Tabs>
-                        </ResizablePanel>
-                        <ResizableHandle withHandle />
-                        <ResizablePanel defaultSize={40} minSize={20}>
+                <ResizablePanel defaultSize={40} minSize={20}>
+                    <ResizablePanelGroup direction="horizontal">
+                        <ResizablePanel defaultSize={50} minSize={30}>
                             <Tabs defaultValue="preview" className="h-full flex flex-col">
                                 <TabsList className="m-2">
                                     <TabsTrigger value="preview" className="flex-1 gap-2"><Eye/> Preview</TabsTrigger>
                                 </TabsList>
                                 <TabsContent value="preview" className="flex-grow">
                                     <LivePreview vfs={vfs} />
+                                </TabsContent>
+                            </Tabs>
+                        </ResizablePanel>
+                        <ResizableHandle withHandle />
+                        <ResizablePanel defaultSize={50} minSize={30}>
+                           <Tabs defaultValue="assistant" className="h-full flex flex-col">
+                                <TabsList className="m-2">
+                                    <TabsTrigger value="assistant" className="flex-1 gap-2"><Bot/> AI Assistant</TabsTrigger>
+                                </TabsList>
+                                <TabsContent value="assistant" className="flex-grow">
+                                     <AiAssistant
+                                        vfs={vfs}
+                                        activeFile={activeFile}
+                                        onVFSUpdate={handleVFSUpdate}
+                                        isGenerating={isGenerating}
+                                        setIsGenerating={setIsGenerating}
+                                    />
                                 </TabsContent>
                             </Tabs>
                         </ResizablePanel>
@@ -167,5 +155,3 @@ export default function SynapseIDEPage() {
     </main>
   );
 }
-
-    
