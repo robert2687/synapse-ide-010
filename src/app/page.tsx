@@ -4,8 +4,8 @@ import { useCallback, useReducer, useState } from "react";
 import type { FileOrFolder, VFSState } from "@/lib/vfs";
 import { initialVFS } from "@/lib/vfs";
 import FileExplorer from "@/components/ide/file-explorer";
-import AiAssistant from "@/components/ide/ai-assistant";
 import LivePreview from "@/components/ide/live-preview";
+import AiAssistant from "@/components/ide/ai-assistant";
 import { Bot, FolderTree, Code, Eye, GitBranch } from "lucide-react";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -77,7 +77,6 @@ export default function SynapseIDEPage() {
             <Tabs defaultValue="files" className="h-full flex flex-col">
                 <TabsList className="m-2">
                     <TabsTrigger value="files" className="flex-1 gap-2"><FolderTree/> Files</TabsTrigger>
-                    <TabsTrigger value="agents" className="flex-1 gap-2"><GitBranch/> Agents</TabsTrigger>
                 </TabsList>
                 <TabsContent value="files" className="flex-grow">
                     <FileExplorer
@@ -86,19 +85,27 @@ export default function SynapseIDEPage() {
                         activeFileId={activeFileId}
                     />
                 </TabsContent>
-                <TabsContent value="agents" className="flex-grow">
-                    <AgentsPanel />
-                </TabsContent>
             </Tabs>
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={80} minSize={30}>
             <ResizablePanelGroup direction="vertical">
                 <ResizablePanel defaultSize={60} minSize={20}>
-                     <div className="p-2 h-full flex flex-col">
-                        <h2 className="text-lg font-semibold flex items-center gap-2 p-2"><Bot/> AI Assistant</h2>
-                        <AiAssistant vfs={vfs} activeFile={activeFile} onVFSUpdate={handleVFSUpdate} />
-                    </div>
+                    <Tabs defaultValue="code" className="h-full flex flex-col">
+                        <TabsList className="m-2">
+                             <TabsTrigger value="code" className="flex-1 gap-2"><Code/> Code</TabsTrigger>
+                             <TabsTrigger value="agents" className="flex-1 gap-2"><GitBranch/> Agents</TabsTrigger>
+                        </TabsList>
+                         <TabsContent value="code" className="flex-grow">
+                             <div className="p-2 h-full flex flex-col">
+                                <h2 className="text-lg font-semibold flex items-center gap-2 p-2"><Bot/> AI Assistant</h2>
+                                <AiAssistant vfs={vfs} activeFile={activeFile} onVFSUpdate={handleVFSUpdate} />
+                            </div>
+                        </TabsContent>
+                        <TabsContent value="agents" className="flex-grow">
+                            <AgentsPanel />
+                        </TabsContent>
+                    </Tabs>
                 </ResizablePanel>
                 <ResizableHandle withHandle />
                 <ResizablePanel defaultSize={40} minSize={20}>
