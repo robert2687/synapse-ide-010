@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -11,6 +12,7 @@ type Agent = {
   name: AgentName;
   status: string;
   icon: React.ElementType;
+  priority: number;
 };
 
 type LogEntry = {
@@ -21,13 +23,13 @@ type LogEntry = {
 };
 
 const initialAgents: Agent[] = [
-  { name: "Orchestrator", status: "Idle", icon: Cpu },
-  { name: "Requirements Analyst", status: "Idle", icon: Bot },
-  { name: "UI/UX Architect", status: "Idle", icon: Bot },
-  { name: "Frontend Coder", status: "Idle", icon: Code },
-  { name: "Backend Coder", status: "Idle", icon: Code },
-  { name: "QA & Security Agent", status: "Idle", icon: TestTube },
-  { name: "DevOps Agent", status: "Idle", icon: HardHat },
+  { name: "Orchestrator", status: "Idle", icon: Cpu, priority: 1 },
+  { name: "Requirements Analyst", status: "Idle", icon: Bot, priority: 2 },
+  { name: "UI/UX Architect", status: "Idle", icon: Bot, priority: 3 },
+  { name: "Frontend Coder", status: "Idle", icon: Code, priority: 4 },
+  { name: "Backend Coder", status: "Idle", icon: Code, priority: 4 },
+  { name: "QA & Security Agent", status: "Idle", icon: TestTube, priority: 5 },
+  { name: "DevOps Agent", status: "Idle", icon: HardHat, priority: 6 },
 ];
 
 const simulationPlan = [
