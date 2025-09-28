@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useCallback, useReducer, useState } from "react";
@@ -10,6 +11,7 @@ import { Bot, FolderTree, Code, Eye, GitBranch } from "lucide-react";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AgentsPanel from "@/components/ide/agents-panel";
+import EditorPanel from "@/components/ide/editor-panel";
 import "dotenv/config";
 
 
@@ -44,13 +46,19 @@ export default function SynapseIDEPage() {
 
   const handleVFSUpdate = useCallback((newVFS: VFSState) => {
     dispatch({ type: 'SET_VFS', payload: newVFS });
-    const defaultFile = Object.values(newVFS).find(f => f.name === 'index.html' || f.name.endsWith('.tsx'));
+    const defaultFile = Object.values(newVFS).find(f => f.name === 'index.html' || f.name.endsWith('.tsx') || f.name.endsWith('.jsx'));
     if (defaultFile) {
         setOpenFileIds([defaultFile.id]);
         setActiveFileId(defaultFile.id);
     } else {
-        setOpenFileIds([]);
-        setActiveFileId(null);
+        const firstFile = Object.values(newVFS).find(f => f.type === 'file');
+        if (firstFile) {
+            setOpenFileIds([firstFile.id]);
+            setActiveFileId(firstFile.id);
+        } else {
+            setOpenFileIds([]);
+            setActiveFileId(null);
+        }
     }
   }, []);
 
@@ -63,11 +71,27 @@ export default function SynapseIDEPage() {
       }
     }
   }, [vfs, openFileIds]);
+  
+  const handleFileContentChange = (id: string, content: string) => {
+    dispatch({ type: 'UPDATE_FILE_CONTENT', payload: { id, content } });
+  };
+  
+  const handleCloseTab = (id: string) => {
+    setOpenFileIds(prev => prev.filter(fileId => fileId !== id));
+    if (activeFileId === id) {
+        if (openFileIds.length > 1) {
+            const newActiveFileId = openFileIds.filter(fileId => fileId !== id)[0];
+            setActiveFileId(newActiveFileId);
+        } else {
+            setActiveFileId(null);
+        }
+    }
+  };
 
   return (
     <main className="h-screen bg-background text-foreground overflow-hidden">
        <ResizablePanelGroup direction="horizontal" className="w-full h-full">
-        <ResizablePanel defaultSize={20} minSize={15}>
+        <ResizablePanel defaultSize={15} minSize={10}>
             <Tabs defaultValue="files" className="h-full flex flex-col">
                 <TabsList className="m-2">
                     <TabsTrigger value="files" className="flex-1 gap-2"><FolderTree/> Files</TabsTrigger>
@@ -82,41 +106,60 @@ export default function SynapseIDEPage() {
             </Tabs>
         </ResizablePanel>
         <ResizableHandle withHandle />
-        <ResizablePanel defaultSize={50} minSize={30}>
-            <div className="p-2 h-full flex flex-col">
-                <h2 className="text-lg font-semibold flex items-center gap-2 p-2"><Bot/> AI Assistant</h2>
-                <AiAssistant
-                    vfs={vfs}
-                    activeFile={activeFile}
-                    onVFSUpdate={handleVFSUpdate}
-                    isGenerating={isGenerating}
-                    setIsGenerating={setIsGenerating}
-                />
-            </div>
-        </ResizablePanel>
-        <ResizableHandle withHandle />
-        <ResizablePanel defaultSize={30} minSize={20}>
-            <ResizablePanelGroup direction="vertical">
-                <ResizablePanel defaultSize={60} minSize={20}>
-                     <Tabs defaultValue="agents" className="h-full flex flex-col">
+        <ResizablePanel defaultSize={85} minSize={30}>
+            <ResizablePanelGroup direction="horizontal">
+                <ResizablePanel defaultSize={40} minSize={25}>
+                    <Tabs defaultValue="assistant" className="h-full flex flex-col">
                         <TabsList className="m-2">
-                             <TabsTrigger value="agents" className="flex-1 gap-2"><GitBranch/> Agents</TabsTrigger>
+                            <TabsTrigger value="assistant" className="flex-1 gap-2"><Bot/> AI Assistant</TabsTrigger>
+                            <TabsTrigger value="agents" className="flex-1 gap-2"><GitBranch/> Agents</TabsTrigger>
                         </TabsList>
-                        <TabsContent value="agents" className="flex-grow">
+                        <TabsContent value="assistant" className="flex-grow">
+                             <AiAssistant
+                                vfs={vfs}
+                                activeFile={activeFile}
+                                onVFSUpdate={handleVFSUpdate}
+                                isGenerating={isGenerating}
+                                setIsGenerating={setIsGenerating}
+                            />
+                        </TabsContent>
+                         <TabsContent value="agents" className="flex-grow">
                             <AgentsPanel isGenerating={isGenerating} />
                         </TabsContent>
                     </Tabs>
                 </ResizablePanel>
                 <ResizableHandle withHandle />
-                <ResizablePanel defaultSize={40} minSize={20}>
-                    <Tabs defaultValue="preview" className="h-full flex flex-col">
-                        <TabsList className="m-2">
-                            <TabsTrigger value="preview" className="flex-1 gap-2"><Eye/> Preview</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="preview" className="flex-grow">
-                            <LivePreview vfs={vfs} />
-                        </TabsContent>
-                    </Tabs>
+                <ResizablePanel defaultSize={60} minSize={30}>
+                     <ResizablePanelGroup direction="vertical">
+                        <ResizablePanel defaultSize={60} minSize={20}>
+                            <Tabs defaultValue="code" className="h-full flex flex-col">
+                                <TabsList className="m-2">
+                                    <TabsTrigger value="code" className="flex-1 gap-2"><Code/> Editor</TabsTrigger>
+                                </TabsList>
+                                <TabsContent value="code" className="flex-grow">
+                                     <EditorPanel
+                                        vfs={vfs}
+                                        openFileIds={openFileIds}
+                                        activeFileId={activeFileId}
+                                        onFileSelect={setActiveFileId}
+                                        onFileContentChange={handleFileContentChange}
+                                        onCloseTab={handleCloseTab}
+                                    />
+                                </TabsContent>
+                            </Tabs>
+                        </ResizablePanel>
+                        <ResizableHandle withHandle />
+                        <ResizablePanel defaultSize={40} minSize={20}>
+                            <Tabs defaultValue="preview" className="h-full flex flex-col">
+                                <TabsList className="m-2">
+                                    <TabsTrigger value="preview" className="flex-1 gap-2"><Eye/> Preview</TabsTrigger>
+                                </TabsList>
+                                <TabsContent value="preview" className="flex-grow">
+                                    <LivePreview vfs={vfs} />
+                                </TabsContent>
+                            </Tabs>
+                        </ResizablePanel>
+                    </ResizablePanelGroup>
                 </ResizablePanel>
             </ResizablePanelGroup>
         </ResizablePanel>
@@ -124,3 +167,5 @@ export default function SynapseIDEPage() {
     </main>
   );
 }
+
+    
