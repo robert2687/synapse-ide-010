@@ -4,11 +4,12 @@ import { useCallback, useReducer, useState } from "react";
 import type { FileOrFolder, VFSState } from "@/lib/vfs";
 import { initialVFS } from "@/lib/vfs";
 import FileExplorer from "@/components/ide/file-explorer";
-import LivePreview from "@/components/ide/live-preview";
 import AiAssistant from "@/components/ide/ai-assistant";
-import { Bot, FolderTree, Code, Eye } from "lucide-react";
+import LivePreview from "@/components/ide/live-preview";
+import { Bot, FolderTree, Code, Eye, GitBranch } from "lucide-react";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AgentsPanel from "@/components/ide/agents-panel";
 
 
 type VFSAction =
@@ -41,7 +42,6 @@ export default function SynapseIDEPage() {
 
   const handleVFSUpdate = useCallback((newVFS: VFSState) => {
     dispatch({ type: 'SET_VFS', payload: newVFS });
-    // Reset open files and active file to a default state
     const defaultFile = Object.values(newVFS).find(f => f.name === 'index.html');
     if (defaultFile) {
         setOpenFileIds([defaultFile.id]);
@@ -72,33 +72,45 @@ export default function SynapseIDEPage() {
   return (
     <main className="h-screen bg-background text-foreground overflow-hidden">
        <ResizablePanelGroup direction="horizontal" className="w-full h-full">
-        <ResizablePanel defaultSize={25} minSize={20}>
-          <div className="p-2 h-full flex flex-col">
-            <h2 className="text-lg font-semibold flex items-center gap-2 p-2"><FolderTree/> Files</h2>
-            <FileExplorer
-                vfs={vfs}
-                onFileSelect={handleFileSelect}
-                activeFileId={activeFileId}
-            />
-          </div>
+        <ResizablePanel defaultSize={20} minSize={15}>
+            <Tabs defaultValue="files" className="h-full flex flex-col">
+                <TabsList className="m-2">
+                    <TabsTrigger value="files" className="flex-1 gap-2"><FolderTree/> Files</TabsTrigger>
+                    <TabsTrigger value="agents" className="flex-1 gap-2"><GitBranch/> Agents</TabsTrigger>
+                </TabsList>
+                <TabsContent value="files" className="flex-grow">
+                    <FileExplorer
+                        vfs={vfs}
+                        onFileSelect={handleFileSelect}
+                        activeFileId={activeFileId}
+                    />
+                </TabsContent>
+                <TabsContent value="agents" className="flex-grow">
+                    <AgentsPanel />
+                </TabsContent>
+            </Tabs>
         </ResizablePanel>
         <ResizableHandle withHandle />
-        <ResizablePanel defaultSize={75} minSize={30}>
-            <Tabs defaultValue="code" className="h-full flex flex-col">
-                <TabsList className="m-2">
-                <TabsTrigger value="code" className="flex-1 gap-2"><Code/> Code</TabsTrigger>
-                <TabsTrigger value="preview" className="flex-1 gap-2"><Eye/> Preview</TabsTrigger>
-                </TabsList>
-                <TabsContent value="code" className="flex-grow">
-                    <div className="p-2 h-full flex flex-col">
+        <ResizablePanel defaultSize={80} minSize={30}>
+            <ResizablePanelGroup direction="vertical">
+                <ResizablePanel defaultSize={60} minSize={20}>
+                     <div className="p-2 h-full flex flex-col">
                         <h2 className="text-lg font-semibold flex items-center gap-2 p-2"><Bot/> AI Assistant</h2>
                         <AiAssistant vfs={vfs} activeFile={activeFile} onVFSUpdate={handleVFSUpdate} />
                     </div>
-                </TabsContent>
-                <TabsContent value="preview" className="flex-grow">
-                <LivePreview vfs={vfs} />
-                </TabsContent>
-            </Tabs>
+                </ResizablePanel>
+                <ResizableHandle withHandle />
+                <ResizablePanel defaultSize={40} minSize={20}>
+                    <Tabs defaultValue="preview" className="h-full flex flex-col">
+                        <TabsList className="m-2">
+                            <TabsTrigger value="preview" className="flex-1 gap-2"><Eye/> Preview</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="preview" className="flex-grow">
+                            <LivePreview vfs={vfs} />
+                        </TabsContent>
+                    </Tabs>
+                </ResizablePanel>
+            </ResizablePanelGroup>
         </ResizablePanel>
       </ResizablePanelGroup>
     </main>
