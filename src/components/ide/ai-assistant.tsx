@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { handleAiQuery, type HandleAiQueryOutput } from "@/lib/actions";
 import type { FileOrFolder, VFSState } from "@/lib/vfs";
 import { Bot, Send, User, Loader2 } from "lucide-react";
@@ -120,11 +120,11 @@ export default function AiAssistant({ vfs, activeFile, onVFSUpdate }: AiAssistan
       </ScrollArea>
       <div className="p-2 border-t bg-background">
         <form onSubmit={handleSubmit} className="flex gap-2">
-          <Textarea
+          <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask the AI to generate code, refactor, or build an app..."
-            className="flex-grow resize-none text-sm min-h-[40px] rounded-md border bg-card"
+            className="flex-grow h-10 rounded-md border bg-card text-base md:text-sm font-sans"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
