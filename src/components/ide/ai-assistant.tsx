@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { handleAiQuery } from "@/lib/actions";
+import { handleAiQuery, type HandleAiQueryOutput } from "@/lib/actions";
 import type { FileOrFolder, VFSState } from "@/lib/vfs";
 import { Bot, Send, User, Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -18,9 +18,10 @@ type Message = {
 interface AiAssistantProps {
   vfs: VFSState;
   activeFile: FileOrFolder | null;
+  onVFSUpdate: (newVFS: VFSState) => void;
 }
 
-export default function AiAssistant({ vfs, activeFile }: AiAssistantProps) {
+export default function AiAssistant({ vfs, activeFile, onVFSUpdate }: AiAssistantProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -39,6 +40,7 @@ export default function AiAssistant({ vfs, activeFile }: AiAssistantProps) {
 
     const userMessage: Message = { role: "user", content: input };
     setMessages((prev) => [...prev, userMessage]);
+    const currentInput = input;
     setInput("");
     setIsLoading(true);
 
@@ -50,14 +52,19 @@ export default function AiAssistant({ vfs, activeFile }: AiAssistantProps) {
         }
       }
 
-      const result = await handleAiQuery(input, fileContents, activeFile?.name);
-
-      if ('error' in result) {
-        throw new Error(result.error);
-      }
+      const result = await handleAiQuery(currentInput, fileContents, activeFile?.name);
       
-      const assistantMessage: Message = { role: "assistant", content: result.response };
-      setMessages((prev) => [...prev, assistantMessage]);
+      if(result.type === 'error') {
+        throw new Error(result.error);
+      } else if (result.type === 'vfs') {
+        onVFSUpdate(result.data.vfs);
+        const assistantMessage: Message = { role: "assistant", content: `I've generated the file structure for your application. You can see it in the file explorer.` };
+        setMessages((prev) => [...prev, assistantMessage]);
+      } else if (result.type === 'response') {
+         const assistantMessage: Message = { role: "assistant", content: result.data.response };
+         setMessages((prev) => [...prev, assistantMessage]);
+      }
+
     } catch (error) {
       console.error("AI Assistant Error:", error);
       const errorMessage = (error instanceof Error) ? error.message : "Could not get a response from the AI. Please try again.";
@@ -116,7 +123,7 @@ export default function AiAssistant({ vfs, activeFile }: AiAssistantProps) {
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask the AI to generate code, refactor, or explain..."
+            placeholder="Ask the AI to generate code, refactor, or build an app..."
             className="flex-grow resize-none text-sm min-h-[40px] rounded-md border bg-card"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {

@@ -1,26 +1,30 @@
-export type File = {
-  id: string;
-  name: string;
-  type: 'file';
-  content: string;
-  status?: 'modified' | 'untracked';
-};
+import { z } from 'zod';
 
-export type Folder = {
-  id: string;
-  name: string;
-  type: 'folder';
-  children: string[];
-};
+export const FileSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  type: z.literal('file'),
+  content: z.string(),
+  status: z.enum(['modified', 'untracked']).optional(),
+});
+export type File = z.infer<typeof FileSchema>;
 
-export type FileOrFolder = File | Folder;
+export const FolderSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  type: z.literal('folder'),
+  children: z.array(z.string()),
+});
+export type Folder = z.infer<typeof FolderSchema>;
 
-export type VFSState = {
-  [id: string]: FileOrFolder;
-};
+export const FileOrFolderSchema = z.union([FileSchema, FolderSchema]);
+export type FileOrFolder = z.infer<typeof FileOrFolderSchema>;
+
+export const VFSStateSchema = z.record(FileOrFolderSchema);
+export type VFSState = z.infer<typeof VFSStateSchema>;
 
 export const initialVFS: VFSState = {
-  "0": { id: "0", name: "synapse-project", type: "folder", children: ["1", "2", "3", "4"] },
+  "0": { id: "0", name: "synapse-project", type: "folder", children: ["1", "2", "3"] },
   "1": { 
     id: "1", 
     name: "index.html", 
@@ -33,12 +37,10 @@ export const initialVFS: VFSState = {
 </head>
 <body>
   <h1>Welcome to Synapse IDE</h1>
-  <p>Edit this file to see live updates!</p>
-  <button id="myButton">Click Me</button>
+  <p>Edit this file to see live updates, or ask the AI to build a new app!</p>
   <script src="script.js"></script>
 </body>
-</html>`,
-    status: 'modified'
+</html>`
   },
   "2": { 
     id: "2", 
@@ -58,42 +60,12 @@ export const initialVFS: VFSState = {
 
 h1 {
   color: #00BFFF;
-}
-
-button {
-  background-color: #8F00FF;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-button:hover {
-  opacity: 0.9;
 }`
   },
   "3": { 
     id: "3", 
     name: "script.js", 
     type: "file", 
-    content: `document.getElementById('myButton').addEventListener('click', () => {
-  alert('Hello from Synapse IDE!');
-});` 
-  },
-  "4": { id: "4", name: "src", type: "folder", children: ["5", "6"] },
-  "5": { 
-    id: "5", 
-    name: "app.js", 
-    type: "file", 
-    content: `console.log("App loaded");`,
-    status: 'untracked'
-  },
-  "6": { 
-    id: "6", 
-    name: "utils.js", 
-    type: "file", 
-    content: `export const a = 1;`
+    content: `console.log("Welcome to Synapse!");` 
   },
 };
