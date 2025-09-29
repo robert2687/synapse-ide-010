@@ -1,14 +1,19 @@
+
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
 import type { VFSState } from "@/lib/vfs";
-import { PanelRightOpen } from "lucide-react";
+import { Maximize, Minimize } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface LivePreviewProps {
   vfs: VFSState;
+  onToggleZenMode: () => void;
+  isZenMode: boolean;
 }
 
-export default function LivePreview({ vfs }: LivePreviewProps) {
+export default function LivePreview({ vfs, onToggleZenMode, isZenMode }: LivePreviewProps) {
   const [srcDoc, setSrcDoc] = useState("");
 
   const compiledCode = useMemo(() => {
@@ -52,10 +57,21 @@ export default function LivePreview({ vfs }: LivePreviewProps) {
   }, [compiledCode]);
 
   return (
-    <div className="flex flex-col h-full bg-card/50">
-      <header className="flex items-center gap-2 p-2 border-b h-10 flex-shrink-0">
-        <div className="text-muted-foreground"><PanelRightOpen /></div>
-        <h2 className="text-sm font-medium">Live Preview</h2>
+    <div className="flex flex-col h-full bg-card/50 border rounded-lg">
+      <header className="flex items-center justify-between gap-2 p-2 border-b h-10 flex-shrink-0">
+        <h2 className="text-sm font-medium ml-2">Live Preview</h2>
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" onClick={onToggleZenMode}>
+                        {isZenMode ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>{isZenMode ? 'Exit Zen Mode' : 'Enter Zen Mode'}</p>
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
       </header>
       <div className="flex-grow">
         <iframe

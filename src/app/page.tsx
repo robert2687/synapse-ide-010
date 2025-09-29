@@ -39,6 +39,7 @@ export default function SynapseIDEPage() {
   const [activeFileId, setActiveFileId] = useState<string | null>("1"); // index.html
   const [openFileIds, setOpenFileIds] = useState<string[]>(["1"]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isZenMode, setIsZenMode] = useState(false);
 
   const activeFile = activeFileId ? vfs[activeFileId] : null;
 
@@ -86,6 +87,16 @@ export default function SynapseIDEPage() {
     }
   };
 
+  const toggleZenMode = () => setIsZenMode(prev => !prev);
+
+  if (isZenMode) {
+    return (
+      <main className="h-screen bg-background text-foreground overflow-hidden">
+        <LivePreview vfs={vfs} onToggleZenMode={toggleZenMode} isZenMode={true} />
+      </main>
+    );
+  }
+
   return (
     <main className="h-screen bg-background text-foreground overflow-hidden">
        <ResizablePanelGroup direction="horizontal" className="w-full h-full">
@@ -125,7 +136,7 @@ export default function SynapseIDEPage() {
                                     <TabsTrigger value="preview" className="flex-1 gap-2"><Eye/> Preview</TabsTrigger>
                                 </TabsList>
                                 <TabsContent value="preview" className="flex-grow">
-                                    <LivePreview vfs={vfs} />
+                                    <LivePreview vfs={vfs} onToggleZenMode={toggleZenMode} isZenMode={false} />
                                 </TabsContent>
                             </Tabs>
                         </ResizablePanel>
